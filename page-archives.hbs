@@ -1,0 +1,101 @@
+{{!< default}}
+
+{{!-- The tag above means: insert everything in this file
+into the {body} of the default.hbs template --}}
+
+<header class="site-header outer">
+    <div class="inner">
+        {{> "site-nav"}}
+    </div>
+</header>
+
+{{#post}}
+
+<main id="site-main" class="site-main outer">
+    <div class="inner">
+
+        <article class="post-full {{post_class}} {{#unless feature_image}}no-image{{/unless}}">
+
+            <header class="post-full-header">
+                <h1 class="post-full-title">{{title}}</h1>
+            </header>
+
+            {{#if feature_image}}
+            <figure class="post-full-image">
+                {{!-- This is a responsive image, it loads different sizes depending on device
+                https://medium.freecodecamp.org/a-guide-to-responsive-images-with-ready-to-use-templates-c400bd65c433 --}}
+                <img
+                    srcset="{{img_url feature_image size="s"}} 300w,
+                            {{img_url feature_image size="m"}} 600w,
+                            {{img_url feature_image size="l"}} 1000w,
+                            {{img_url feature_image size="xl"}} 2000w"
+                    sizes="(max-width: 800px) 400px,
+                            (max-width: 1170px) 700px,
+                            1400px"
+                    src="{{img_url feature_image size="xl"}}"
+                    alt="{{title}}"
+                />
+            </figure>
+            {{/if}}
+
+            <section class="post-full-content">
+                <div class="post-content">
+                   <section class="archives-content">
+                    <p class="archives-total">
+                        {{! count posts }} {{#get "posts" as |posts postPages|}} {{! Use our pages (pagination) object }}
+                        <strong>目前共计&nbsp;
+                            <span style="color:#26a8ed">{{postPages.total}}</span>&nbsp;篇日志</strong>
+                        {{/get}}
+                    </p>
+                    {{#get "posts" limit="all" order="published_at desc"}} {{#foreach posts}}
+                    <div class='archives-item clearfix' date="{{date format='YYYY'}}">
+                        <div class="archives-info">
+                            <time class="archives-date" datetime="{{date published_at format='MM-DD'}}">{{date published_at format="MM-DD"}}</time>
+                            <a href='{{url}}'>{{title}}</a>
+                        </div>
+                    </div>
+                {{/foreach}} {{/get}}
+            </section>
+                </div>
+            </section>
+
+        </article>
+    </div>
+
+{{/post}}
+
+{{#contentFor "scripts"}}
+    <script>
+        var yearArray = new Array();
+        document.querySelectorAll(".archives-item").forEach(function (cur, index) {
+            var archivesYear = cur.getAttribute("date")
+            yearArray.push(archivesYear);
+        });
+        var uniqueYear = unique(yearArray);
+
+        for (var i = 0; i < uniqueYear.length; i++) {
+            var year = uniqueYear[i];
+            var html = "<h3 class='archives-year'>" + year + "</h3>";
+            var nodeList = document.querySelectorAll("[date='" +year + "']");
+            var firstChild = nodeList[0];
+            var dateNode = createNode(html);
+            firstChild.before(dateNode);
+        }
+
+        function unique(array) {
+            var n = []; //一个新的临时数组
+            //遍历当前数组
+            for (var i = 0; i < array.length; i++) {
+                //如果当前数组的第i已经保存进了临时数组，那么跳过，
+                //否则把当前项push到临时数组里面
+                if (n.indexOf(array[i]) == -1) n.push(array[i]);
+            }
+            return n;
+        }
+        function createNode(htmlStr) {
+            var div = document.createElement("div");
+            div.innerHTML = htmlStr;
+            return div.childNodes[0];
+        }
+    </script>
+{{/contentFor}}
